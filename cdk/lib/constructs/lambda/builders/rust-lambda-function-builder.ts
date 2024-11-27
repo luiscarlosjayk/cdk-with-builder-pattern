@@ -3,9 +3,9 @@ import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as rustLambda from 'cargo-lambda-cdk';
 import { Construct } from 'constructs';
 import * as nodePath from 'node:path';
-import { LambdaFunction } from '.';
-import type { Environment } from '../../types';
-import * as utils from '../../utils';
+import { LambdaFunctionBuilder } from '..';
+import type { Environment } from '../../../types';
+import * as utils from '../../../utils';
 import path = require('node:path');
 
 export interface RustLambdaFunctionProps {
@@ -13,7 +13,7 @@ export interface RustLambdaFunctionProps {
     environment: Environment;
 }
 
-export class RustLambdaFunction extends LambdaFunction {
+export class RustLambdaFunctionBuilder extends LambdaFunctionBuilder {
     protected _lambda: rustLambda.RustFunction;
     protected _manifestPath: string;
 
@@ -42,14 +42,10 @@ export class RustLambdaFunction extends LambdaFunction {
             reservedConcurrentExecutions: this._concurrency,
             architecture: lambda.Architecture.ARM_64,
             role: this._role,
-            // layers: props.layers,
-            // bundling: {
-            //     // ...certificatesBundlingOptions,
-            //     ...props.bundling
-            // },
             vpc: this._vpc,
             vpcSubnets: this._vpcSubnets,
             securityGroups: this._securityGroups,
+            layers: this._layers,
         });
 
         return this._lambda;

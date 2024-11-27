@@ -4,17 +4,17 @@ import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as logs from 'aws-cdk-lib/aws-logs';
-import { Construct } from 'constructs';
-import { Environment, NotUndefined } from '../../types';
-import * as utils from '../../utils';
 import { ISecret } from 'aws-cdk-lib/aws-secretsmanager';
+import { Construct } from 'constructs';
+import { Environment, NotUndefined } from '../../../types';
+import * as utils from '../../../utils';
 
 export interface IFunctionProps {
     name: string;
     environment: Environment;
 }
 
-export abstract class LambdaFunction extends Construct {
+export abstract class LambdaFunctionBuilder extends Construct {
     protected _id: string;
     protected _name: string;
     protected _lambdaName: string;

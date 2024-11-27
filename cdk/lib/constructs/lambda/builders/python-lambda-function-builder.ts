@@ -4,7 +4,7 @@ import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as rustLambda from 'cargo-lambda-cdk';
 import { Construct } from 'constructs';
 import * as nodePath from 'node:path';
-import { LambdaFunction } from '.';
+import { LambdaFunctionBuilder } from '.';
 import type { Environment } from '../../types';
 import * as utils from '../../utils';
 
@@ -13,7 +13,7 @@ export interface PythonLambdaFunctionProps {
     environment: Environment;
 }
 
-export class PythonLambdaFunction extends LambdaFunction {
+export class PythonLambdaFunctionBuilder extends LambdaFunctionBuilder {
     protected _lambda: rustLambda.RustFunction;
     protected _entry: string;
     protected _handler?: string;

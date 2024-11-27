@@ -1,8 +1,8 @@
 [package]
-name = "start-stop-database-cluster"
+name = "dummy-rust-lambda"
 version = "0.1.0"
 edition = "2021"
-authors = ["luis.osorio@wizeline.com"]
+authors = ["luiscarlosjayk@gmail.com"]
 
 [dependencies]
 aws_lambda_events = { version = "0.15.1", default-features = false, features = ["eventbridge"] }
@@ -11,4 +11,3 @@ tokio = { version = "1", features = ["macros"] }
 aws-config = "1.5.8"
 serde = "1.0.210"
 serde_json = "1.0.132"
-aws-sdk-neptune = "1.51.0"

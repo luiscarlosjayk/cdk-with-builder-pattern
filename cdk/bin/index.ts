@@ -2,7 +2,7 @@
 import * as cdk from 'aws-cdk-lib';
 import 'source-map-support/register';
 import { getEnvironment } from '../lib/config/environments';
-import { GithubOIDCStack, PipelinesStack } from '../lib/stacks';
+import { AllInConstructorStack, BuilderPatternStack } from '../lib/stacks';
 import { loadEnvFile } from '../lib/utils';
 import { getPrefixed } from '../lib/utils/prefix';
 
