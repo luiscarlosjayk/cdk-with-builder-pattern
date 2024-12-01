@@ -1,10 +1,13 @@
 import * as cdk from 'aws-cdk-lib';
 import { FoundationModelIdentifier } from 'aws-cdk-lib/aws-bedrock';
+import * as dynamoDb from 'aws-cdk-lib/aws-dynamodb';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as logs from 'aws-cdk-lib/aws-logs';
-import { ISecret } from 'aws-cdk-lib/aws-secretsmanager';
+import * as s3 from 'aws-cdk-lib/aws-s3';
+import * as secretsManager from 'aws-cdk-lib/aws-secretsmanager';
+import * as sqs from 'aws-cdk-lib/aws-sqs';
 import { Construct } from 'constructs';
 import { Environment, NotUndefined } from '../../../types';
 import * as utils from '../../../utils';
@@ -83,13 +86,44 @@ export abstract class LambdaFunctionBuilder extends Construct {
         return this;
     }
 
-    withSecret(secret: ISecret, asEnvironmentVariable?: string): this {
+    withSecret(secret: secretsManager.ISecret, environmentVariable?: string): this {
         secret.grantRead(this._role);
 
-        if (asEnvironmentVariable) {
-            this.withEnvironmentVariable(asEnvironmentVariable, secret.secretName);
+        if (environmentVariable) {
+            this.withEnvironmentVariable(environmentVariable, secret.secretName);
         }
 
+        return this;
+    }
+
+    withSQS(queue: sqs.Queue, environmentVariable?: string): this {
+        queue.grantConsumeMessages(this._role);
+        queue.grantSendMessages(this._role);
+
+        if (environmentVariable) {
+            this.withEnvironmentVariable(environmentVariable, queue.queueName);
+        }
+        
+        return this;
+    }
+
+    withDynamoDBTable(table: dynamoDb.Table, environmentVariable?: string): this {
+        table.grantReadWriteData(this._role);
+
+        if (environmentVariable) {
+            this.withEnvironmentVariable(environmentVariable, table.tableName);
+        }
+        
+        return this;
+    }
+
+    withBucket(bucket: s3.Bucket, environmentVariable?: string): this {
+        bucket.grantReadWrite(this._role);
+
+        if (environmentVariable) {
+            this.withEnvironmentVariable(environmentVariable, bucket.bucketName);
+        }
+        
         return this;
     }
 

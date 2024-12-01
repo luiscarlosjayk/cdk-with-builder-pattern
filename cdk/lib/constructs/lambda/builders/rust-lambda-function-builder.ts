@@ -6,7 +6,6 @@ import * as nodePath from 'node:path';
 import { LambdaFunctionBuilder } from '..';
 import type { Environment } from '../../../types';
 import * as utils from '../../../utils';
-import path = require('node:path');
 
 export interface RustLambdaFunctionProps {
     name: string;

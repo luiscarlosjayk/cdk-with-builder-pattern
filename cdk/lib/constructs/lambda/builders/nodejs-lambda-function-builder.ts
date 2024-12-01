@@ -1,37 +1,41 @@
-import * as pythonLambda from '@aws-cdk/aws-lambda-python-alpha';
 import * as cdk from 'aws-cdk-lib';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
-import * as rustLambda from 'cargo-lambda-cdk';
+import * as nodejsLambda from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Construct } from 'constructs';
 import * as nodePath from 'node:path';
-import { LambdaFunctionBuilder } from '.';
-import { Environment } from '../../../types';
+import { LambdaFunctionBuilder } from '..';
+import type { Environment } from '../../../types';
 import * as utils from '../../../utils';
 
-export interface PythonLambdaFunctionProps {
+export interface NodejsLambdaFunctionProps {
     name: string;
     environment: Environment;
 }
 
-export class PythonLambdaFunctionBuilder extends LambdaFunctionBuilder {
-    protected _lambda: rustLambda.RustFunction;
+export class NodejsLambdaFunctionBuilder extends LambdaFunctionBuilder {
+    protected _lambda: nodejsLambda.NodejsFunction;
     protected _entry: string;
-    protected _handler?: string;
-    protected _index?: string;
+    protected _handler: string;
+    protected _bundling?: nodejsLambda.BundlingOptions;
 
-    constructor(scope: Construct, id: string, props: PythonLambdaFunctionProps) {
+    constructor(scope: Construct, id: string, props: NodejsLambdaFunctionProps) {
         super(scope, id, props.name, props.environment);
 
         // Defaults
         this.withHandler('handler');
         this.withEntry(this._name);
-        this.withRuntime(lambda.Runtime.PYTHON_3_13);
+        this.withRuntime(lambda.Runtime.NODEJS_LATEST);
     }
 
     withRuntime(runtime: lambda.Runtime): this {
-        if (!Object.values(utils.constants.PYTHON_RUNTIME).includes(runtime)) {
-            throw TypeError(`Expected a Python runtime to be given. Got ${runtime.name} instead.`);
+        if (!Object.values(utils.constants.NODEJS_RUNTIME).includes(runtime)) {
+            throw TypeError(`Expected a Nodejs runtime to be given. Got ${runtime.name} instead.`);
         }
+        return this;
+    }
+
+    withHandler(handler: string): this {
+        this._handler = handler;
         return this;
     }
 
@@ -41,27 +45,16 @@ export class PythonLambdaFunctionBuilder extends LambdaFunctionBuilder {
         return this;
     }
 
-    withIndex(index: string): this {
-        this._index = index;
-        return this;
-    }
-
-    withHandler(handler: string): this {
-        this._handler = handler;
-        return this;
-    }
-
     build(): cdk.aws_lambda.IFunction {
         if (!this._entry) {
             throw 'Expected entry to be defined.';
         }
 
-        this._lambda = new pythonLambda.PythonFunction(this, `PythonLambda${this._id}`, {
+        this._lambda = new nodejsLambda.NodejsFunction(this, `NodejsLambda${this._id}`, {
             runtime: this._runtime,
-            entry: this._entry,
-            index: this._index,
-            handler: this._handler,
             functionName: this._lambdaName,
+            handler: this._handler,
+            entry: this._entry,
             timeout: this._duration,
             memorySize: this._memorySize,
             logGroup: this._logGroup,
@@ -73,6 +66,7 @@ export class PythonLambdaFunctionBuilder extends LambdaFunctionBuilder {
             vpcSubnets: this._vpcSubnets,
             securityGroups: this._securityGroups,
             layers: this._layers,
+            bundling: this._bundling,
         });
 
         return this._lambda;
