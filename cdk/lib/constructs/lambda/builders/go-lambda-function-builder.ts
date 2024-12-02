@@ -3,7 +3,7 @@ import * as cdk from 'aws-cdk-lib';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import { Construct } from 'constructs';
 import * as nodePath from 'node:path';
-import { LambdaFunctionBuilder } from '..';
+import { LambdaFunctionBuilder } from '.';
 import type { Environment } from '../../../types';
 import * as utils from '../../../utils';
 
@@ -27,13 +27,13 @@ export class GoLambdaFunctionBuilder extends LambdaFunctionBuilder {
 
     withEntry(path: string, basePath?: string): this {
         basePath = basePath ?? utils.constants.LAMBDA_BASEPATH;
-        this._entry = nodePath.join(__dirname, `../${basePath}/${path}`);
+        this._entry = nodePath.join(basePath, path, 'main.go');
         return this;
     }
 
     withModuleDir(path: string, basePath?: string): this {
         basePath = basePath ?? utils.constants.LAMBDA_BASEPATH;
-        this._moduleDir = nodePath.join(__dirname, `../${basePath}/${path}`);
+        this._moduleDir = nodePath.join(basePath, path, 'go.mod');
         return this;
     }
 

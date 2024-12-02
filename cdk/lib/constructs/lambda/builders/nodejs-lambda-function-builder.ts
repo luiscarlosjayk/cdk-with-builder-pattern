@@ -3,7 +3,7 @@ import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as nodejsLambda from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Construct } from 'constructs';
 import * as nodePath from 'node:path';
-import { LambdaFunctionBuilder } from '..';
+import { LambdaFunctionBuilder } from '.';
 import type { Environment } from '../../../types';
 import * as utils from '../../../utils';
 
@@ -31,6 +31,7 @@ export class NodejsLambdaFunctionBuilder extends LambdaFunctionBuilder {
         if (!Object.values(utils.constants.NODEJS_RUNTIME).includes(runtime)) {
             throw TypeError(`Expected a Nodejs runtime to be given. Got ${runtime.name} instead.`);
         }
+        this._runtime = runtime;
         return this;
     }
 
@@ -41,7 +42,7 @@ export class NodejsLambdaFunctionBuilder extends LambdaFunctionBuilder {
 
     withEntry(path: string, basePath?: string): this {
         basePath = basePath ?? utils.constants.LAMBDA_BASEPATH;
-        this._entry = nodePath.join(__dirname, `../${basePath}/${path}`);
+        this._entry = nodePath.join(basePath, path, 'index.ts');
         return this;
     }
 

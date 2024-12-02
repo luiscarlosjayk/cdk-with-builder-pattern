@@ -18,7 +18,7 @@ export class RustFunctionConstruct extends LambdaConstruct {
 
         const path = props.path ?? this._name;
         const basePath = props.basePath ?? utils.constants.LAMBDA_BASEPATH;
-        this._manifestPath = nodePath.join(__dirname, `../${basePath}/${path}/Cargo.toml`);
+        this._manifestPath = nodePath.join(basePath, `${path}/Cargo.toml`);
 
         // Build the lambda
         this._lambda = new rustLambda.RustFunction(this, `RustLambda${this._id}`, {

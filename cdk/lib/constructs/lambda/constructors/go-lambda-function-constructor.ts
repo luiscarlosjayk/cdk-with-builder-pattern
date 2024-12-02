@@ -13,16 +13,16 @@ export type GoLambdaProps = {
 
 export class GoFunctionConstruct extends LambdaConstruct {
     protected _entry: string;
-    protected _moduleDir?: string;
+    protected _moduleDir: string;
 
     constructor(scope: Construct, id: string, props: GoLambdaProps) {
         super(scope, id, props);
 
         const path = props.path ?? this._name;
-        const moduleDirPath = props.moduleDir ?? path;
         const basePath = props.basePath ?? utils.constants.LAMBDA_BASEPATH;
-        this._entry = nodePath.join(__dirname, `../${basePath}/${path}`);
-        this._moduleDir = nodePath.join(__dirname, `../${basePath}/${moduleDirPath}`);
+        const moduleDirPath = props.moduleDir ?? basePath;
+        this._entry = nodePath.join(basePath, path, 'main.go');
+        this._moduleDir = nodePath.join(moduleDirPath, path, 'go.mod');
 
         // Build the lambda
         this._lambda = new goLambda.GoFunction(this, `GoLambda${this._id}`, {

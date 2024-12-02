@@ -34,7 +34,7 @@ export class PythonFunctionConstruct extends LambdaConstruct {
         // Validate path
         const path = props.path ?? this._name;
         const basePath = props.basePath ?? utils.constants.LAMBDA_BASEPATH;
-        this._entry = nodePath.join(__dirname, `../${basePath}/${path}`);
+        this._entry = nodePath.join(basePath, path);
 
         // Build the lambda
         this._lambda = new pythonLambda.PythonFunction(this, `PythonLambda${this._id}`, {

@@ -14,7 +14,7 @@ import { getPrefixed } from '../../../utils';
 export interface LambdaConstructProps {
     name: string;
     environment: Environment;
-    withLogGroup: boolean;
+    withLogGroup?: boolean;
     duration?: lambda.FunctionProps['timeout'];
     memorySize?: lambda.FunctionProps['memorySize'];
     concurrency?: lambda.FunctionProps['reservedConcurrentExecutions'];
@@ -29,7 +29,6 @@ export interface LambdaConstructProps {
     dynamoDBTables?: { table: dynamoDB.Table, environmentVariable?: string }[];
     managedPolicies?: iam.IManagedPolicy[];
 }
-
 
 export class LambdaConstruct extends Construct {
     protected _id: string;
@@ -48,6 +47,10 @@ export class LambdaConstruct extends Construct {
     protected _securityGroups?: lambda.FunctionProps['securityGroups'];
     protected _layers?: lambda.FunctionProps['layers'];
     protected _runtime: lambda.FunctionProps['runtime'];
+
+    get lambda() {
+        return this._lambda;
+    }
 
     constructor(scope: Construct, id: string, props: LambdaConstructProps) {
         super(scope, id);

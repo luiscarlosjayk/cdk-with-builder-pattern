@@ -30,14 +30,15 @@ export class PythonLambdaFunctionBuilder extends LambdaFunctionBuilder {
 
     withRuntime(runtime: lambda.Runtime): this {
         if (!Object.values(utils.constants.PYTHON_RUNTIME).includes(runtime)) {
-            throw TypeError(`Expected a Python runtime to be given. Got ${runtime.name} instead.`);
+            throw TypeError(`Expected a Python runtime to be given. Got ${runtime} instead.`);
         }
+        this._runtime = runtime;
         return this;
     }
 
     withEntry(path: string, basePath?: string): this {
         basePath = basePath ?? utils.constants.LAMBDA_BASEPATH;
-        this._entry = nodePath.join(__dirname, `../${basePath}/${path}`);
+        this._entry = nodePath.join(basePath, path);
         return this;
     }
 

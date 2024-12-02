@@ -28,7 +28,7 @@ export class NodejsFunctionConstruct extends LambdaConstruct {
 
         const path = props.path ?? this._name;
         const basePath = props.basePath ?? utils.constants.LAMBDA_BASEPATH;
-        this._entry = nodePath.join(__dirname, `../${basePath}/${path}`);
+        this._entry = nodePath.join(basePath, path, 'index.ts');
 
         // Bundling options
         this._bundling = props.bundling;
