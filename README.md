@@ -8,7 +8,11 @@ This repository explores an alternative approach using what is known in Software
 
 The Builder Pattern aims to separate the process of constructing a complex object from its representation, allowing the same construction process to produce different representations.
 
+## Disclaimer
+
 This is not intended to demerit one over the other, that's left for the lecturer to judge by themselves.
+
+I've written my own personal opinion at the end of this article for when to use which approach.
 
 ## Understanding AWS CDK Constructs
 
