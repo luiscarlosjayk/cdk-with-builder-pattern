@@ -2,7 +2,10 @@
 import * as cdk from 'aws-cdk-lib';
 import 'source-map-support/register';
 import { getEnvironment } from '../lib/config/environments';
-import { GithubOIDCStack, PipelinesStack } from '../lib/stacks';
+import {
+    AllInConstructorStack,
+    BuilderPatternStack,
+} from '../lib/stacks';
 import { loadEnvFile } from '../lib/utils';
 import { getPrefixed } from '../lib/utils/prefix';
 
@@ -30,7 +33,7 @@ const tags = {
  * Stack following Builder Pattern
  */
 const builderPatternStackName = getPrefixed('stack-with-builder-pattern', environment);
-new BuilderPatternStack(app, 'PipelinesStack', {
+new BuilderPatternStack(app, 'BuilderPatternStack', {
     stackName: builderPatternStackName,
     environment,
     env,
@@ -41,13 +44,13 @@ new BuilderPatternStack(app, 'PipelinesStack', {
 /**
  * Stack with All-In Constructor
  */
-const noBuilderPatternStackName = getPrefixed('stack-with-allin-constructor', environment);
-new AllInConstructorStack(app, 'PipelinesStack', {
-    stackName: noBuilderPatternStackName,
+const constructorPatternStackName = getPrefixed('stack-with-constructors', environment);
+new AllInConstructorStack(app, 'ConstructorStack', {
+    stackName: constructorPatternStackName,
     environment,
     env,
     // Set tags for all resources in the stack
-    tags: { ...tags, STACK: noBuilderPatternStackName },
+    tags: { ...tags, STACK: constructorPatternStackName },
 });
 
 app.synth();

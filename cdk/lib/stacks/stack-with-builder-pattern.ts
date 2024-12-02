@@ -1,19 +1,20 @@
 import * as cdk from 'aws-cdk-lib';
+import * as iam from 'aws-cdk-lib/aws-iam';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as secret from 'aws-cdk-lib/aws-secretsmanager';
-import * as iam from 'aws-cdk-lib/aws-iam';
-import { DocumentIngestor, PythonLambdaFunction } from '../constructs';
+import { GoLambdaFunctionBuilder, NodejsLambdaFunctionBuilder, PythonLambdaFunctionBuilder, RustLambdaFunctionBuilder } from '../constructs';
 import { Environment } from '../types';
+import { getPrefixed } from '../utils';
 
-export interface PipelinesStackProps extends cdk.StackProps {
+export interface BuilderPatternStackProps extends cdk.StackProps {
     environment: Environment;
 }
 
-export class PipelinesStack extends cdk.Stack {
+export class BuilderPatternStack extends cdk.Stack {
     protected readonly id: string;
     protected readonly env: Environment;
 
-    constructor(scope: cdk.App, id: string, props: PipelinesStackProps) {
+    constructor(scope: cdk.App, id: string, props: BuilderPatternStackProps) {
         super(scope, id);
 
         this.env = props.environment;
@@ -22,105 +23,115 @@ export class PipelinesStack extends cdk.Stack {
         /**
          * Secrets
          */
-        const dbSecret = secret.Secret.fromSecretNameV2(this, 'DatabaseSecret', 'dev/knowledge_base/newo4j-aura');
+        const mySecret = new secret.Secret(this, `Secret${id}`, {
+            secretName: getPrefixed('builder-pattern-secret', this.env),
+        });
 
         /**
          * Lambda Layers
+         * 
+         * Reference: https://docs.aws.amazon.com/systems-manager/latest/userguide/ps-integration-lambda-extensions.html#ps-integration-lambda-extensions-add
          */
-        const neo4jLambdaLayer = lambda.LayerVersion.fromLayerVersionArn(this, 'Neo4jLambdaLayer', 'arn:aws:lambda:us-east-1:905418263649:layer:neo4j:1');
-        const unidecodeLambdaLayer = lambda.LayerVersion.fromLayerVersionArn(this, 'UnidecodeLambdaLayer', 'arn:aws:lambda:us-east-1:905418263649:layer:unidecode:1');
+        const myLambdaLayer = lambda.LayerVersion.fromLayerVersionArn(this, 'ParametersSecretsLayer', 'arn:aws:lambda:us-east-1:177933569100:layer:AWS-Parameters-and-Secrets-Lambda-Extension:12');
 
         /**
          * Lambdas
          */
-        const generateNodesDefinitionLambda = new PythonLambdaFunction(this, `GenerateNodesDefinition${id}`, {
-            name: 'generate-nodes-definition',
+        const simplePythonLambda = new PythonLambdaFunctionBuilder(this, 'BuilderSimplePythonLambda', {
+            name: 'dummy-python-lambda',
             environment: props.environment,
         })
-        .withLogGroup()
-        .build();
+            .build();
 
-        const prepareDatabaseLambda = new PythonLambdaFunction(this, `PrepareDatabase${id}`, {
-            name: 'prepare-database',
+        const complexPythonLambda = new PythonLambdaFunctionBuilder(this, 'BuilderComplexPythonLambda', {
+            name: 'complex-builder-python',
             environment: props.environment,
         })
-        .withLogGroup()
-        .withDuration(90)
-        .withSecret(dbSecret, 'AURA_DB_SECRET_NAME')
-        .withLayers([
-            neo4jLambdaLayer,
-            unidecodeLambdaLayer,
-        ])
-        .build();
+            .withLogGroup()
+            .withEntry('dummy-python-lambda')
+            .withIndex('index.py')
+            .withHandler('handler')
+            .withDuration(90)
+            .withSecret(mySecret, 'SECRET_NAME')
+            .withLayers([
+                myLambdaLayer,
+            ])
+            .withManagedPolicy(
+                iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonBedrockFullAccess'),
+            )
+            .withManagedPolicy(
+                iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonS3FullAccess'),
+            )
+            .build();
 
-        const buildContentGraphLambda = new PythonLambdaFunction(this, `BuildContentGraph${id}`, {
-            name: 'build-content-graph',
+        const simpleRustLambda = new RustLambdaFunctionBuilder(this, 'BuilderSimpleRustLambda', {
+            name: 'dummy-rust-lambda',
             environment: props.environment,
         })
-        .withLogGroup()
-        .withDuration(90)
-        .withSecret(dbSecret, 'AURA_DB_SECRET_NAME')
-        .withLayers([
-            neo4jLambdaLayer,
-        ])
-        .build();
+            .build();
+        
+        const complexRustLambda = new RustLambdaFunctionBuilder(this, 'BuilderComplexRustLambda', {
+            name: 'complex-rust-lambda',
+            environment: props.environment,
+        })
+            .withManifest('dummy-rust-lambda')
+            .withLogGroup()
+            .withDuration(90)
+            .withSecret(mySecret, 'SECRET_NAME')
+            .withLayers([
+                myLambdaLayer,
+            ])
+            .withManagedPolicy(
+                iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonBedrockFullAccess'),
+            )
+            .withManagedPolicy(
+                iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonS3FullAccess'),
+            )
+            .build();
 
-        const generateNodeEmbeddingLambda = new PythonLambdaFunction(this, `GenerateNodeEmbedding${id}`, {
-            name: 'generate-node-embedding',
+        const simpleGoLambda = new GoLambdaFunctionBuilder(this, 'BuilderSimpleGoLambda', {
+            name: 'dummy-go-lambda',
             environment: props.environment,
         })
-        .withLogGroup()
-        .withDuration(30)
-        .withManagedPolicy(
-            iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonBedrockFullAccess'),
-        )
-        .withLayers([
-            neo4jLambdaLayer,
-        ])
-        .build();
+            .build();
 
-        const searchNodeRelationshipsLambda = new PythonLambdaFunction(this, `SearchNodeRelationships${id}`, {
-            name: 'search-node-relationships',
+        const simpleNodejsLambda = new NodejsLambdaFunctionBuilder(this, 'BuilderSimpleNodejsLambda', {
+            name: 'dummy-nodejs-lambda',
             environment: props.environment,
         })
-        .withLogGroup()
-        .withDuration(90)
-        .withSecret(dbSecret, 'AURA_DB_SECRET_NAME')
-        .withManagedPolicy(
-            iam.ManagedPolicy.fromAwsManagedPolicyName('NeptuneFullAccess'),
-        )
-        .withManagedPolicy(
-            iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonS3FullAccess'),
-        )
-        .withLayers([
-            neo4jLambdaLayer,
-            unidecodeLambdaLayer,
-        ])
-        .build();
-
-        const callbackLambda = new PythonLambdaFunction(this, `Callback${id}`, {
-            name: 'callback',
-            environment: props.environment,
-        })
-        .withLogGroup()
-        .withDuration(30)
-        .build();
+            .build();
 
         /**
-         * State Machine
+         * Stack Exports
          */
-        new DocumentIngestor(this, `DocumentIngestor${id}`, {
-            environment: props.environment,
-            name: 'DocumentIngestor',
-            lambdas: {
-                generateNodesDefinition: generateNodesDefinitionLambda,
-                prepareDatabase: prepareDatabaseLambda,
-                generateEmbeddings: generateNodeEmbeddingLambda,
-                createNodes: searchNodeRelationshipsLambda,
-                buildContentGraph: buildContentGraphLambda,
-                callback: callbackLambda,
-            },
-        })
-        .build();
+        new cdk.CfnOutput(this, 'BuilderSimplePythonLambdaARN', {
+            exportName: getPrefixed('builder-simple-python-lambda-arn', props.environment),
+            value: simplePythonLambda.functionArn,
+        });
+
+        new cdk.CfnOutput(this, 'BuilderComplexPythonLambdaARN', {
+            exportName: getPrefixed('builder-complex-python-lambda-arn', props.environment),
+            value: complexPythonLambda.functionArn,
+        });
+
+        new cdk.CfnOutput(this, 'BuilderSimpleRustLambdaARN', {
+            exportName: getPrefixed('builder-simple-rust-lambda-arn', props.environment),
+            value: simpleRustLambda.functionArn,
+        });
+
+        new cdk.CfnOutput(this, 'BuilderComplexRustLambdaARN', {
+            exportName: getPrefixed('builder-complex-rust-lambda-arn', props.environment),
+            value: complexRustLambda.functionArn,
+        });
+
+        new cdk.CfnOutput(this, 'BuilderSimpleGoLambdaARN', {
+            exportName: getPrefixed('builder-simple-go-lambda-arn', props.environment),
+            value: simpleGoLambda.functionArn,
+        });
+
+        new cdk.CfnOutput(this, 'BuilderSimpleNodejsLambdaARN', {
+            exportName: getPrefixed('builder-simple-nodejs-lambda-arn', props.environment),
+            value: simpleNodejsLambda.functionArn,
+        });
     }
 }

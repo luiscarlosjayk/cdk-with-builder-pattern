@@ -3,27 +3,29 @@ import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as rustLambda from 'cargo-lambda-cdk';
 import { Construct } from 'constructs';
 import * as nodePath from 'node:path';
-import { LambdaFunction } from '.';
-import type { Environment } from '../../types';
-import * as utils from '../../utils';
-import path = require('node:path');
+import { LambdaFunctionBuilder } from '.';
+import type { Environment } from '../../../types';
+import * as utils from '../../../utils';
 
 export interface RustLambdaFunctionProps {
     name: string;
     environment: Environment;
 }
 
-export class RustLambdaFunction extends LambdaFunction {
+export class RustLambdaFunctionBuilder extends LambdaFunctionBuilder {
     protected _lambda: rustLambda.RustFunction;
     protected _manifestPath: string;
 
     constructor(scope: Construct, id: string, props: RustLambdaFunctionProps) {
         super(scope, id, props.name, props.environment);
+
+        // Defaults
+        this.withManifest(this._name);
     }
 
-    withManifest(path?: string, basePath?: string): this {
-        path = path ?? this._name;
-        this._manifestPath = nodePath.join(__dirname, `${basePath ?? utils.constants.LAMBDA_BASEPATH}/${path}/Cargo.toml`);
+    withManifest(path: string, basePath?: string): this {
+        basePath = basePath ?? utils.constants.LAMBDA_BASEPATH;
+        this._manifestPath = nodePath.join(basePath, `${path}/Cargo.toml`);
         return this;
     }
 
@@ -42,14 +44,10 @@ export class RustLambdaFunction extends LambdaFunction {
             reservedConcurrentExecutions: this._concurrency,
             architecture: lambda.Architecture.ARM_64,
             role: this._role,
-            // layers: props.layers,
-            // bundling: {
-            //     // ...certificatesBundlingOptions,
-            //     ...props.bundling
-            // },
             vpc: this._vpc,
             vpcSubnets: this._vpcSubnets,
             securityGroups: this._securityGroups,
+            layers: this._layers,
         });
 
         return this._lambda;

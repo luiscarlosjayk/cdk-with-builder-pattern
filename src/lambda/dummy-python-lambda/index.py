@@ -7,7 +7,7 @@ import botocore
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-def lambda_handler(event, context):
+def handler(event, context):
     """
     Lambda function to log the event and context.
     
