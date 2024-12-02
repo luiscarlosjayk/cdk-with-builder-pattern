@@ -123,26 +123,26 @@ You can find an example of multiple lambda functions built using normal construc
         })
             .build();
 
-        const complexPythonLambda = new PythonLambdaFunctionBuilder(this, 'BuilderComplexPythonLambda', {
-            name: 'complex-builder-python',
-            environment: environment,
-        })
-            .withLogGroup()
-            .withEntry('dummy-python-lambda')
-            .withIndex('index.py')
-            .withHandler('handler')
-            .withDuration(90)
-            .withSecret(mySecret, 'SECRET_NAME')
-            .withLayers([
-                myLambdaLayer,
-            ])
-            .withManagedPolicy(
-                iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonBedrockFullAccess'),
-            )
-            .withManagedPolicy(
-                iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonS3FullAccess'),
-            )
-            .build();
+    const complexPythonLambda = new PythonLambdaFunctionBuilder(this, 'BuilderComplexPythonLambda', {
+        name: 'complex-builder-python',
+        environment: environment,
+    })
+        .withLogGroup()
+        .withEntry('dummy-python-lambda')
+        .withIndex('index.py')
+        .withHandler('handler')
+        .withDuration(90)
+        .withSecret(mySecret, 'SECRET_NAME')
+        .withLayers([
+            myLambdaLayer,
+        ])
+        .withManagedPolicy(
+            iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonBedrockFullAccess'),
+        )
+        .withManagedPolicy(
+            iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonS3FullAccess'),
+        )
+        .build();
 ```
 
 ## Choosing Between Builder Pattern and Normal Constructors
